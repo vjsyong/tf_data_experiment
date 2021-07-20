@@ -16,17 +16,19 @@ AR_dir = pathlib.Path("../appa-real")
 for _ in UTKFace_dir.glob("*"):
     UTKFace_len += 1
 
+image_size = 224
+
 UTK_list_ds = tf.data.Dataset.list_files(str(UTKFace_dir/'*'))
 appa_real_ds = tf.data.Dataset.list_files(str(AR_dir/'train/*.jpg'))
 
 AR_df_train = pd.read_csv(AR_dir/'gt_avg_train.csv')
 AR_df_train = AR_df_train.drop(['num_ratings', 'apparent_age_std', 'real_age'], axis=1)
-AR_df_train['file_name'] = AR_df_train['file_name'].apply(lambda x: f"{AR_dir}/train/{x}")
+AR_df_train['file_name'] = AR_df_train['file_name'].apply(lambda x: f"{AR_dir}/train_align/{x}")
 AR_len_train = AR_df_train.shape[0]
 
 AR_df_val = pd.read_csv(AR_dir/'gt_avg_valid.csv')
 AR_df_val = AR_df_val.drop(['num_ratings', 'apparent_age_std', 'real_age'], axis=1)
-AR_df_val['file_name'] = AR_df_val['file_name'].apply(lambda x: f"{AR_dir}/valid/{x}")
+AR_df_val['file_name'] = AR_df_val['file_name'].apply(lambda x: f"{AR_dir}/valid_align/{x}")
 AR_len_val = AR_df_val.shape[0]
 
 AR_path_labels_train = tf.data.Dataset.from_tensor_slices((AR_df_train.file_name, AR_df_train.apparent_age_avg)).shuffle(AR_len_train)
@@ -136,7 +138,7 @@ def main():
     train, test = get_datasets_utkface(32)
 
     for i in range(10):
-      construct_mosaic(train.take(8).unbatch(), i)
+      construct_mosaic(test.take(8).unbatch(), i)
 
     # for image, label in train.take(2).unbatch():
     #     # print(batch)

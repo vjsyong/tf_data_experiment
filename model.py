@@ -25,10 +25,10 @@ def get_model(model_name="EfficientNetB0"):
         elif model_name == 'EfficientNetB3':
             base_model = EfficientNetB3(include_top=False, weights='imagenet', input_shape=(300, 300, 3), pooling="avg")
             
-        dense1 = Dense(units=1024, activation="relu", name="dense_1")(base_model.output)
+        dense1 = Dense(units=128, activation="relu", name="dense_1")(base_model.output)
         dropout1 = Dropout(0.2)(dense1)
 
-        dense2 = Dense(units=1024, activation="relu", name="dense_2")(dropout1)
+        dense2 = Dense(units=128, activation="relu", name="dense_2")(dropout1)
         dropout2 = Dropout(0.2)(dense2)
 
         prediction = Dense(units=101, activation="softmax",

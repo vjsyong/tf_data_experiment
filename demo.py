@@ -18,15 +18,15 @@ def get_args():
     parser = argparse.ArgumentParser(description="This script detects faces from web cam input, "
                                                  "and estimates age for the detected faces.",
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument("--model_name", type=str, default="ResNet50",
+    parser.add_argument("--model_name", type=str, default="EfficientNetB0",
                         help="model name: 'ResNet50' or 'InceptionResNetV2' or 'EfficientNetB3")
-    parser.add_argument("--weight_file", type=str, default=None,
+    parser.add_argument("--weight_file", type=str, default="checkpoints/weights/EfficientNetB0/32-0.003-sgd/022-1.985-2.946.hdf5",
                         help="path to weight file (e.g. age_only_weights.029-4.027-5.250.hdf5)")
-    parser.add_argument("--margin", type=float, default=0.4,
+    parser.add_argument("--margin", type=float, default=0,
                         help="margin around detected face for age-gender estimation")
-    parser.add_argument("--image_dir", type=str, default=None,
+    parser.add_argument("--image_dir", type=str, default="../appa-real/train",
                         help="target image directory; if set, images in image_dir are used instead of webcam")
-    parser.add_argument("--image_gt", type=str, default=None,
+    parser.add_argument("--image_gt", type=str, default="../appa-real/gt_train.csv",
                         help="ground truth labels for appa-real test; if set, visualization will render gt next to prediction")
     args = parser.parse_args()
     return args
@@ -75,7 +75,7 @@ def yield_images_from_dir(image_dir, has_gt=False):
             h, w, _ = img.shape
             r = 640 / max(w, h)
             if has_gt:
-                yield cv2.resize(img, (int(w * r), int(h * r))), str(image_path).split("/")[2]
+                yield cv2.resize(img, (int(w * r), int(h * r))), str(image_path).split("/")[3]
             else:
                 yield cv2.resize(img, (int(w * r), int(h * r))), None
             
@@ -104,6 +104,7 @@ def main():
 
     # load ground truth labels for visualization
     gt = pd.read_csv(image_gt) if image_gt else None
+    print(gt.head())
 
     image_generator = yield_images_from_dir(image_dir, True if image_gt else False) if image_dir else yield_images()
 
@@ -112,17 +113,18 @@ def main():
         img_h, img_w, _ = np.shape(input_img)
 
         if path:
-        # gt_slice = gt.loc[gt['file_name'] == path]
+            gt_slice = gt.loc[gt['file_name'] == path]
             boolean_series = gt["file_name"].str.startswith(path.split(".")[0])
             gt_slice = gt[boolean_series]
             apparent_age = gt_slice.apparent_age.mean()
             real_age = gt_slice.real_age.mean()
-            # print(gt_slice["apparent_age"], gt_slice["real_age"])
+            print(gt_slice["apparent_age"], gt_slice["real_age"])
             print(apparent_age, real_age)
 
         # detect faces using dlib detector
         detected = detector(input_img, 1)
         faces = np.empty((len(detected), img_size, img_size, 3))
+        face = None
 
         if len(detected) > 0:
             for i, d in enumerate(detected):
@@ -133,6 +135,8 @@ def main():
                 yw2 = min(int(y2 + margin * h), img_h - 1)
                 cv2.rectangle(img, (x1, y1), (x2, y2), (255, 0, 0), 2)
                 faces[i, :, :, :] = cv2.resize(img[yw1:yw2 + 1, xw1:xw2 + 1, :], (img_size, img_size))
+                # Debug line for looking at tightly cropped face
+                face = cv2.resize(img[yw1:yw2 + 1, xw1:xw2 + 1, :], (img_size, img_size))
 
             # predict ages and genders of the detected faces
             results = model.predict(faces)
@@ -145,9 +149,14 @@ def main():
                     label = "P:" + str(int(predicted_ages[i])) + ", R:" + str(real_age) + ", A:" + str(round(apparent_age, 2))
                 else:
                     label = "P:" + str(int(predicted_ages[i]))
-                draw_label(img, (d.left(), d.top()), label)
+                # draw_label(img, (d.left(), d.top()), label)
+                draw_label(face, (0, 20), label, font_scale=0.7) # Temp line for tightly cropped face
 
-        cv2.imshow("result", img)
+        # cv2.imshow("result", img)
+        try:
+            cv2.imshow("result", face)
+        except:
+            pass
 
         key = cv2.waitKey(-1) if image_dir else cv2.waitKey(30)
 
