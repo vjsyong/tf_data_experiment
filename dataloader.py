@@ -1,11 +1,9 @@
 import tensorflow as tf
 import tensorflow_addons as tfa
 import pathlib
-import os
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
-from augmix import AugMix
 from mpl_toolkits.axes_grid1 import ImageGrid
 
 np.set_printoptions(precision=4)
@@ -14,13 +12,9 @@ UTKFace_dir = pathlib.Path("../UTKFace")
 UTKFace_len = 0
 
 AR_dir = pathlib.Path("../appa-real")
-# AR_len_train = 0
 
 for _ in UTKFace_dir.glob("*"):
     UTKFace_len += 1
-
-# for _ in AR_dir.glob("train/*.jpg"):
-#     AR_len_train += 1
 
 UTK_list_ds = tf.data.Dataset.list_files(str(UTKFace_dir/'*'))
 appa_real_ds = tf.data.Dataset.list_files(str(AR_dir/'train/*.jpg'))
@@ -49,14 +43,6 @@ def load_appa_real(image_path, label):
   image = tf.image.resize(image, [224, 224])
   image = tf.cast(image, dtype=tf.uint8)
   return image, label
-
-
-# precalculated means and stds of the dataset (in RGB order)
-means = [0.44892993872313053, 0.4148519066242368, 0.301880284715257]
-stds = [0.24393544875614917, 0.2108791383467354, 0.220427056859487]
-ag = AugMix(means, stds)
-
-image_size = 224
 
 def process_dataset(file_path):
 
@@ -94,13 +80,6 @@ def image_augmentations(image, label):
   image = tf.squeeze(image)
 
   return image, label
-
-def augmix(image, label):
-    image = ag.transform(image)
-    return image, label
-
-
-
 
 def get_datasets_utkface(batch_size=32, split_ratio=0.7):
     # images_ds = list_ds.map(process_dataset, num_parallel_calls=tf.data.AUTOTUNE).shuffle(UTKFace_len)
