@@ -1,18 +1,11 @@
-from pathlib import Path
-import cv2
-import dlib
-import numpy as np
-import pandas as pd
-import argparse
+import cv2, dlib, argparse
 from contextlib import contextmanager
+from dlib_utils import extract_left_eye_center, extract_right_eye_center, get_rotation_matrix, crop_image
+from pathlib import Path
 from tensorflow.keras.utils import get_file
 from model import get_model
-
-
-
-pretrained_model = "https://github.com/yu4u/age-gender-estimation/releases/download/v0.5/age_only_resnet50_weights.061-3.300-4.410.hdf5"
-modhash = "306e44200d3f632a5dccac153c2966f2"
-
+import numpy as np
+import pandas as pd
 
 def get_args():
     parser = argparse.ArgumentParser(description="This script detects faces from web cam input, "
@@ -22,15 +15,12 @@ def get_args():
                         help="model name: 'ResNet50' or 'InceptionResNetV2' or 'EfficientNetB3")
     parser.add_argument("--weight_file", type=str, default="checkpoints/weights/EfficientNetB0/32-0.003-sgd/022-1.985-2.946.hdf5",
                         help="path to weight file (e.g. age_only_weights.029-4.027-5.250.hdf5)")
-    parser.add_argument("--margin", type=float, default=0,
-                        help="margin around detected face for age-gender estimation")
-    parser.add_argument("--image_dir", type=str, default="../appa-real/train",
+    parser.add_argument("--image_dir", type=str, default="../appa-real/test",
                         help="target image directory; if set, images in image_dir are used instead of webcam")
-    parser.add_argument("--image_gt", type=str, default="../appa-real/gt_train.csv",
+    parser.add_argument("--image_gt", type=str,
                         help="ground truth labels for appa-real test; if set, visualization will render gt next to prediction")
     args = parser.parse_args()
     return args
-
 
 def draw_label(image, point, label, font=cv2.FONT_HERSHEY_SIMPLEX,
                font_scale=1, thickness=2):
@@ -38,7 +28,6 @@ def draw_label(image, point, label, font=cv2.FONT_HERSHEY_SIMPLEX,
     x, y = point
     cv2.rectangle(image, (x, y - size[1]), (x + size[0], y), (255, 0, 0), cv2.FILLED)
     cv2.putText(image, label, point, font, font_scale, (255, 255, 255), thickness)
-
 
 @contextmanager
 def video_capture(*args, **kwargs):
@@ -78,24 +67,18 @@ def yield_images_from_dir(image_dir, has_gt=False):
                 yield cv2.resize(img, (int(w * r), int(h * r))), str(image_path).split("/")[3]
             else:
                 yield cv2.resize(img, (int(w * r), int(h * r))), None
-            
-
 
 def main():
     args = get_args()
     model_name = args.model_name
     weight_file = args.weight_file
-    margin = args.margin
+    # margin = args.margin
     image_dir = args.image_dir
     image_gt = args.image_gt
 
-    if not weight_file:
-        weight_file = get_file("age_only_resnet50_weights.061-3.300-4.410.hdf5", pretrained_model,
-                               cache_subdir="pretrained_models",
-                               file_hash=modhash, cache_dir=Path(__file__).resolve().parent)
-
     # for face detection
     detector = dlib.get_frontal_face_detector()
+    predictor = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat")
 
     # load model and weights
     model = get_model(model_name=model_name)
@@ -104,7 +87,6 @@ def main():
 
     # load ground truth labels for visualization
     gt = pd.read_csv(image_gt) if image_gt else None
-    print(gt.head())
 
     image_generator = yield_images_from_dir(image_dir, True if image_gt else False) if image_dir else yield_images()
 
@@ -120,7 +102,7 @@ def main():
             real_age = gt_slice.real_age.mean()
             print(gt_slice["apparent_age"], gt_slice["real_age"])
             print(apparent_age, real_age)
-
+        
         # detect faces using dlib detector
         detected = detector(input_img, 1)
         faces = np.empty((len(detected), img_size, img_size, 3))
@@ -128,15 +110,25 @@ def main():
 
         if len(detected) > 0:
             for i, d in enumerate(detected):
-                x1, y1, x2, y2, w, h = d.left(), d.top(), d.right() + 1, d.bottom() + 1, d.width(), d.height()
-                xw1 = max(int(x1 - margin * w), 0)
-                yw1 = max(int(y1 - margin * h), 0)
-                xw2 = min(int(x2 + margin * w), img_w - 1)
-                yw2 = min(int(y2 + margin * h), img_h - 1)
+                shape = predictor(input_img, d)
+                left_eye = extract_left_eye_center(shape)
+                right_eye = extract_right_eye_center(shape)
+                x1, y1, x2, y2, = d.left(), d.top(), d.right() + 1, d.bottom() + 1
                 cv2.rectangle(img, (x1, y1), (x2, y2), (255, 0, 0), 2)
-                faces[i, :, :, :] = cv2.resize(img[yw1:yw2 + 1, xw1:xw2 + 1, :], (img_size, img_size))
-                # Debug line for looking at tightly cropped face
-                face = cv2.resize(img[yw1:yw2 + 1, xw1:xw2 + 1, :], (img_size, img_size))
+                M = get_rotation_matrix(left_eye, right_eye)
+                rotated = cv2.warpAffine(img, M, (img_w, img_h), flags=cv2.INTER_CUBIC)
+                
+                face = faces[i, :, :, :] = cv2.resize(crop_image(rotated, d), (224, 224))
+                
+                # x1, y1, x2, y2, w, h = d.left(), d.top(), d.right() + 1, d.bottom() + 1, d.width(), d.height()
+                # xw1 = max(int(x1 - margin * w), 0)
+                # yw1 = max(int(y1 - margin * h), 0)
+                # xw2 = min(int(x2 + margin * w), img_w - 1)
+                # yw2 = min(int(y2 + margin * h), img_h - 1)
+                # cv2.rectangle(img, (x1, y1), (x2, y2), (255, 0, 0), 2)
+                # faces[i, :, :, :] = cv2.resize(img[yw1:yw2 + 1, xw1:xw2 + 1, :], (img_size, img_size))
+                # # Debug line for looking at tightly cropped face
+                # face = cv2.resize(img[yw1:yw2 + 1, xw1:xw2 + 1, :], (img_size, img_size))
 
             # predict ages and genders of the detected faces
             results = model.predict(faces)
@@ -149,14 +141,14 @@ def main():
                     label = "P:" + str(int(predicted_ages[i])) + ", R:" + str(real_age) + ", A:" + str(round(apparent_age, 2))
                 else:
                     label = "P:" + str(int(predicted_ages[i]))
-                # draw_label(img, (d.left(), d.top()), label)
-                draw_label(face, (0, 20), label, font_scale=0.7) # Temp line for tightly cropped face
+                draw_label(img, (d.left(), d.top()), label)
+                # draw_label(face, (0, 20), label, font_scale=0.7) # Temp line for tightly cropped face
 
         # cv2.imshow("result", img)
         try:
-            cv2.imshow("result", face)
+            cv2.imshow("result", img)
         except:
-            pass
+            print("imshow failed")
 
         key = cv2.waitKey(-1) if image_dir else cv2.waitKey(30)
 
@@ -164,5 +156,5 @@ def main():
             break
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
