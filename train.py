@@ -77,8 +77,10 @@ def main():
     # Data Pipeline
 
     # train_ds, val_ds = get_datasets_utkface(batch_size)
-    train_ds, val_ds = get_datasets_appa_real(batch_size)
-    # train_ds, val_ds = get_datasets_utkface(batch_size, 0.8)
+    _, val_ds = get_datasets_appa_real(batch_size)
+    train_ds, _ = get_datasets_utkface(batch_size, 1)
+
+    # train_ds = train_ds.concatenate(train_ds_utk)
 
     # train_ds = mirrored_strategy.experimental_distribute_dataset(train_ds)
     # test_ds = mirrored_strategy.experimental_distribute_dataset(test_ds)
@@ -95,9 +97,9 @@ def main():
     callbacks = [
                 TensorBoard(log_dir="./logs", histogram_freq=1),
                 # LearningRateScheduler(schedule=Schedule(nb_epochs, initial_lr=lr)),
-                ReduceLROnPlateau(monitor='val_age_mae', factor=0.4,
+                ReduceLROnPlateau(monitor='val_age_mae', factor=0.2,
                               patience=6, min_lr=0.0001, verbose=1),
-                ModelCheckpoint(str(output_dir) + f"/weights/{model_name}/{batch_size}-{lr}-{opt_name}/dense128-" + "{epoch:03d}-{val_loss:.3f}-{val_age_mae:.3f}.hdf5",
+                ModelCheckpoint(str(output_dir) + f"/weights/dense128-{model_name}/{batch_size}-{lr}-{opt_name}/" + "{epoch:03d}-{val_loss:.3f}-{val_age_mae:.3f}.hdf5",
                                  monitor="val_age_mae",
                                  verbose=1,
                                  save_best_only=True,
