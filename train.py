@@ -4,7 +4,7 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.keras.callbacks import LearningRateScheduler, ModelCheckpoint, TensorBoard, ReduceLROnPlateau
 from tensorflow.keras.optimizers import SGD, Adam
-from dataloader import get_datasets_utkface, get_datasets_appa_real
+from dataloader import get_datasets_utkface, get_datasets_appa_real, get_datasets_chalearn
 import dataloader
 import os
 
@@ -20,7 +20,7 @@ def get_args():
                         help="path to the AFAD face dataset")
     parser.add_argument("--output_dir", type=str, default="checkpoints",
                         help="checkpoint dir")
-    parser.add_argument("--batch_size", type=int, default=32,
+    parser.add_argument("--batch_size", type=int, default=64,
                         help="batch size")
     parser.add_argument("--nb_epochs", type=int, default=30,
                         help="number of epochs")
@@ -77,10 +77,11 @@ def main():
     # Data Pipeline
 
     # train_ds, val_ds = get_datasets_utkface(batch_size)
-    _, val_ds = get_datasets_appa_real(batch_size)
-    train_ds, _ = get_datasets_utkface(batch_size, 1)
+    train_ds_ar, val_ds = get_datasets_appa_real(batch_size)
+    train_ds_utk, _ = get_datasets_utkface(batch_size, 1)
+    train_ds_cl = get_datasets_chalearn(batch_size)
 
-    # train_ds = train_ds.concatenate(train_ds_utk)
+    train_ds = train_ds_ar.concatenate(train_ds_utk).concatenate(train_ds_cl)
 
     # train_ds = mirrored_strategy.experimental_distribute_dataset(train_ds)
     # test_ds = mirrored_strategy.experimental_distribute_dataset(test_ds)
