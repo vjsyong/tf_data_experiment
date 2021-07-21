@@ -79,7 +79,7 @@ def image_augmentations(image, label):
 
   # Pad empty batch to work with random cutout
   image = tf.expand_dims(image, axis=0)
-  image = tfa.image.random_cutout(image, (tf.random.uniform([], 25, 35, dtype=tf.int32, seed=0) * 2,tf.random.uniform([], 25, 35, dtype=tf.int32, seed=0) * 2), constant_values = 0)
+  image = tfa.image.random_cutout(image, (48, 48), constant_values = 0)
   
   image = tf.squeeze(image)
 
@@ -94,13 +94,13 @@ def get_datasets_utkface(batch_size=32, split_ratio=0.7):
     train_ds = lds.take(train_size)
     test_ds = lds.skip(train_size)
 
-    train_ds = train_ds.map(process_dataset, num_parallel_calls=tf.data.AUTOTUNE).cache().map(image_augmentations, num_parallel_calls=tf.data.AUTOTUNE).batch(batch_size, drop_remainder=True).prefetch(tf.data.AUTOTUNE)
+    train_ds = train_ds.map(process_dataset, num_parallel_calls=tf.data.AUTOTUNE).cache().map(image_augmentations, num_parallel_calls=tf.data.AUTOTUNE).batch(batch_size, drop_remainder=True).prefetch(tf.data.AUTOTUNE).shuffle(tf.data.AUTOTUNE)
     test_ds = test_ds.map(process_dataset, num_parallel_calls=tf.data.AUTOTUNE).batch(batch_size, drop_remainder=True).prefetch(tf.data.AUTOTUNE).cache()
     return train_ds, test_ds
 
 def get_datasets_appa_real(batch_size):
     # train_ds = AR_path_labels_train.map(load_appa_real, num_parallel_calls=tf.data.AUTOTUNE).map(image_augmentations, num_parallel_calls=tf.data.AUTOTUNE).batch(batch_size, drop_remainder=True).prefetch(tf.data.AUTOTUNE)
-    train_ds = AR_path_labels_train.map(load_appa_real, num_parallel_calls=tf.data.AUTOTUNE).cache().map(image_augmentations, num_parallel_calls=tf.data.AUTOTUNE).batch(batch_size, drop_remainder=True).prefetch(tf.data.AUTOTUNE)
+    train_ds = AR_path_labels_train.map(load_appa_real, num_parallel_calls=tf.data.AUTOTUNE).cache().map(image_augmentations, num_parallel_calls=tf.data.AUTOTUNE).batch(batch_size, drop_remainder=True).prefetch(tf.data.AUTOTUNE).shuffle(tf.data.AUTOTUNE)
     test_ds = AR_path_labels_val.map(load_appa_real, num_parallel_calls=tf.data.AUTOTUNE).batch(batch_size, drop_remainder=True).prefetch(tf.data.AUTOTUNE).cache()
     return train_ds, test_ds
 
