@@ -1,6 +1,6 @@
 import cv2, dlib, argparse
 from contextlib import contextmanager
-from dlib_utils import extract_left_eye_center, extract_right_eye_center, get_rotation_matrix, crop_image
+from utilities.dlib_utils import extract_left_eye_center, extract_right_eye_center, get_rotation_matrix, crop_image
 from pathlib import Path
 from tensorflow.keras.utils import get_file
 from model import get_model
