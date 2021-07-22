@@ -4,7 +4,6 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.keras.callbacks import LearningRateScheduler, ModelCheckpoint, TensorBoard, ReduceLROnPlateau
 from tensorflow.keras.optimizers import SGD, Adam
-from dataloader import get_datasets_utkface, get_datasets_appa_real, get_datasets_chalearn
 import dataloader
 import os
 
@@ -75,17 +74,9 @@ def main():
         image_size = 300
 
     # Data Pipeline
-
-    # train_ds, val_ds = get_datasets_utkface(batch_size)
-    train_ds_ar, val_ds = get_datasets_appa_real(batch_size)
-    train_ds_utk, _ = get_datasets_utkface(batch_size, 1)
-    train_ds_cl = get_datasets_chalearn(batch_size)
-
-    train_ds = train_ds_ar.concatenate(train_ds_utk).concatenate(train_ds_cl)
-
-    # train_ds = mirrored_strategy.experimental_distribute_dataset(train_ds)
-    # test_ds = mirrored_strategy.experimental_distribute_dataset(test_ds)
-
+    dl = dataloader.Dataloader(batch_size)
+    train_ds, val_ds = dl.get_datasets_appa_real()
+    
     os.system("rm -rf ./logs/")
 
     # Training Pipeline
