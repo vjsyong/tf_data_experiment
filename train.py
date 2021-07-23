@@ -75,7 +75,8 @@ def main():
 
     # Data Pipeline
     dl = dataloader.Dataloader(batch_size)
-    train_ds, val_ds = dl.get_datasets_wiki()
+    # train_ds, val_ds = dl.get_datasets_wiki()
+    train_ds, val_ds = dl.get_datasets_pretraining()
     
     os.system("rm -rf ./logs/")
 

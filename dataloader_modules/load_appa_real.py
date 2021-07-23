@@ -1,20 +1,9 @@
 import tensorflow as tf
 import pathlib
 import pandas as pd
-from .im_tools import image_augmentations
+from .im_tools import image_augmentations, load_image_and_labels
 
 image_size = 224
-
-def load_appa_real(image_path, label):
-  label = tf.math.round(label)
-  label = tf.clip_by_value(label, 0, 100)
-  label = tf.cast(label, dtype=tf.int32)
-  label = tf.one_hot(label, 101, dtype=tf.uint8)
-  image = tf.io.read_file(image_path)
-  image = tf.image.decode_jpeg(image, channels=3)
-  image = tf.image.resize(image, [image_size, image_size])
-  image = tf.cast(image, dtype=tf.uint8)
-  return image, label
 
 def load_augment_batch_dataset(batch_size, im_size=224):
     global image_size
@@ -35,8 +24,8 @@ def load_augment_batch_dataset(batch_size, im_size=224):
     AR_path_labels_train = tf.data.Dataset.from_tensor_slices((AR_df_train.file_name, AR_df_train.apparent_age_avg)).shuffle(AR_len_train)
     AR_path_labels_val = tf.data.Dataset.from_tensor_slices((AR_df_val.file_name, AR_df_val.apparent_age_avg)).shuffle(AR_len_val)
     
-    train_ds = AR_path_labels_train.map(load_appa_real, num_parallel_calls=tf.data.AUTOTUNE).cache().shuffle(24).map(image_augmentations, num_parallel_calls=tf.data.AUTOTUNE).batch(batch_size, drop_remainder=True).prefetch(tf.data.AUTOTUNE)
-    test_ds = AR_path_labels_val.map(load_appa_real, num_parallel_calls=tf.data.AUTOTUNE).batch(batch_size, drop_remainder=True).prefetch(tf.data.AUTOTUNE).cache()
+    train_ds = AR_path_labels_train.map(load_image_and_labels, num_parallel_calls=tf.data.AUTOTUNE).cache().shuffle(24).map(image_augmentations, num_parallel_calls=tf.data.AUTOTUNE).batch(batch_size, drop_remainder=True).prefetch(tf.data.AUTOTUNE)
+    test_ds = AR_path_labels_val.map(load_image_and_labels, num_parallel_calls=tf.data.AUTOTUNE).batch(batch_size, drop_remainder=True).prefetch(tf.data.AUTOTUNE).cache()
     return train_ds, test_ds
 
 

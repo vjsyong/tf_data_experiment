@@ -18,22 +18,31 @@ class Dataloader():
         train_ds, val_ds = appa_real_loader.load_augment_batch_dataset(self.batch_size)
         return train_ds, val_ds
     
-    def get_datasets_utkface(self):
-        train_ds, val_ds = utk_loader.load_augment_batch_dataset(self.batch_size, split_ratio=0.7)
+    def get_datasets_utkface(self, split_ratio=0.7):
+        train_ds, val_ds = utk_loader.load_augment_batch_dataset(self.batch_size, split_ratio=split_ratio)
         return train_ds, val_ds
 
-    def get_datasets_chalearn(self):
-        train_ds, val_ds = chalearn_loader.load_augment_batch_dataset(self.batch_size, split_ratio=0.7)
+    def get_datasets_chalearn(self, split_ratio=0.7):
+        train_ds, val_ds = chalearn_loader.load_augment_batch_dataset(self.batch_size, split_ratio=split_ratio)
         return train_ds, val_ds
 
-    def get_datasets_wiki(self):
-        train_ds, val_ds = imdb_wiki_loader.load_augment_batch_dataset(self.batch_size, split_ratio=0.7, dataset="wiki")
+    def get_datasets_wiki(self, split_ratio=0.7):
+        train_ds, val_ds = imdb_wiki_loader.load_augment_batch_dataset(self.batch_size, split_ratio=split_ratio, dataset="wiki")
         return train_ds, val_ds
 
-    def get_datasets_imdb(self):
-        train_ds, val_ds = imdb_wiki_loader.load_augment_batch_dataset(self.batch_size, split_ratio=0.7, dataset="imdb")
+    def get_datasets_imdb(self, split_ratio=0.7):
+        train_ds, val_ds = imdb_wiki_loader.load_augment_batch_dataset(self.batch_size, split_ratio=split_ratio, dataset="imdb")
         return train_ds, val_ds
 
+    # Create IMDB-WIKI pretraining dataset
+    def get_datasets_pretraining(self):
+        # Use all files in both datasets to create a pretraining dataset
+        train_ds_imdb, val_ds_imdb = self.get_datasets_imdb(split_ratio=0.8)
+        train_ds_wiki, val_ds_wiki   = self.get_datasets_wiki(split_ratio=0.8)
+        train_ds = train_ds_imdb.concatenate(train_ds_wiki)
+        val_ds = val_ds_imdb.concatenate(val_ds_wiki)
+        return train_ds, val_ds
+    
     def show_sample(self, image, label):
         plt.figure()
         plt.imshow(image)
