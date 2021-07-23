@@ -1,7 +1,7 @@
 import tensorflow as tf
 import pathlib
 import pandas as pd
-from .im_augmentations import image_augmentations
+from .im_tools import image_augmentations
 
 image_size = 224
 

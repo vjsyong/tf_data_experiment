@@ -1,6 +1,7 @@
 import dataloader_modules.load_appa_real as appa_real_loader
 import dataloader_modules.load_utkface as utk_loader
 import dataloader_modules.load_chalearn as chalearn_loader
+import dataloader_modules.load_imdb_wiki as imdb_wiki_loader
 import tensorflow as tf
 import matplotlib.pyplot as plt
 
@@ -25,6 +26,14 @@ class Dataloader():
         train_ds, val_ds = chalearn_loader.load_augment_batch_dataset(self.batch_size, split_ratio=0.7)
         return train_ds, val_ds
 
+    def get_datasets_wiki(self):
+        train_ds, val_ds = imdb_wiki_loader.load_augment_batch_dataset(self.batch_size, split_ratio=0.7, dataset="wiki")
+        return train_ds, val_ds
+
+    def get_datasets_imdb(self):
+        train_ds, val_ds = imdb_wiki_loader.load_augment_batch_dataset(self.batch_size, split_ratio=0.7, dataset="imdb")
+        return train_ds, val_ds
+
     def show_sample(self, image, label):
         plt.figure()
         plt.imshow(image)
@@ -38,5 +47,5 @@ if __name__ == '__main__':
     dl = Dataloader()
     train_ds, val_ds = dl.get_datasets_chalearn()
     print(train_ds)
-    for image, label in val_ds.take(1).unbatch():
+    for image, label in train_ds.take(1).unbatch():
         dl.show_sample(image, label)

@@ -11,22 +11,25 @@ class MatDataToCSV():
         pass
 
     def convert_mat_tocsv(self):
-        working_dir = Path(f"../../imdb_wiki/wiki_crop/")
-        mat = scipy.io.loadmat(working_dir / 'wiki.mat')
+        working_dir = Path(f"../imdb_wiki/imdb_crop/")
+        mat = scipy.io.loadmat(working_dir / 'imdb.mat')
 
-        instances = mat['wiki'][0][0][0].shape[1]
+        instances = mat['imdb'][0][0][0].shape[1]
         columns = ["dob", "photo_taken", "full_path", "gender",\
                 "name", "face_location", "face_score", "second_face_score"]
         df = pd.DataFrame(index = range(0,instances), columns = columns)
 
         for i in mat:
-            if i == "wiki":
+            if i == "imdb":
                 current_array = mat[i][0][0]
                 for j in range(len(current_array)):
-                    df[columns[j]] = pd.DataFrame(current_array[j][0])
+                    try:
+                        df[columns[j]] = pd.DataFrame(current_array[j][0])
+                    except:
+                        print("column failed")
         return df
 
 if __name__ == '__main__':
     mat = MatDataToCSV()
     df = mat.convert_mat_tocsv()
-    df.to_csv("wiki.csv")
+    df.to_csv("imdb.csv")

@@ -1,7 +1,7 @@
 import tensorflow as tf
 import pathlib
 import pandas as pd
-from .im_augmentations import image_augmentations
+from .im_tools import image_augmentations
 
 image_size = 224
 
@@ -33,7 +33,7 @@ def load_augment_batch_dataset(batch_size, im_size=224, split_ratio=0.7):
     test_ds = CL_path_labels.skip(train_size)
     
     # Load files, augment, batch, prefetch into dataset
-    train_ds = CL_path_labels.map(load_chalearn, num_parallel_calls=tf.data.AUTOTUNE).cache().shuffle(24).map(image_augmentations, num_parallel_calls=tf.data.AUTOTUNE).batch(batch_size, drop_remainder=True).prefetch(tf.data.AUTOTUNE)
+    train_ds = train_ds.map(load_chalearn, num_parallel_calls=tf.data.AUTOTUNE).cache().shuffle(24).map(image_augmentations, num_parallel_calls=tf.data.AUTOTUNE).batch(batch_size, drop_remainder=True).prefetch(tf.data.AUTOTUNE)
     test_ds = test_ds.map(load_chalearn, num_parallel_calls=tf.data.AUTOTUNE).batch(batch_size, drop_remainder=True).prefetch(tf.data.AUTOTUNE).cache()
     
     return train_ds, test_ds

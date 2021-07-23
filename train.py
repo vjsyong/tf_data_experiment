@@ -7,16 +7,16 @@ from tensorflow.keras.optimizers import SGD, Adam
 import dataloader
 import os
 
-from model import get_model, age_mae, mirrored_strategy
+from model import get_model, age_mae
 
 
 def get_args():
     parser = argparse.ArgumentParser(description="This script trains the CNN model for age estimation.",
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument("--utk_dir", type=str, default=None,
-                        help="path to the UTK face dataset")
-    parser.add_argument("--afad_dir", type=str, default=None,
-                        help="path to the AFAD face dataset")
+    # parser.add_argument("--utk_dir", type=str, default=None,
+    #                     help="path to the UTK face dataset")
+    # parser.add_argument("--afad_dir", type=str, default=None,
+    #                     help="path to the AFAD face dataset")
     parser.add_argument("--output_dir", type=str, default="checkpoints",
                         help="checkpoint dir")
     parser.add_argument("--batch_size", type=int, default=64,
@@ -60,8 +60,8 @@ def get_optimizer(opt_name, lr):
 def main():
     args = get_args()
     # appa_dir = args.appa_dir
-    utk_dir = args.utk_dir
-    afad_dir = args.afad_dir
+    # utk_dir = args.utk_dir
+    # afad_dir = args.afad_dir
     model_name = args.model_name
     batch_size = args.batch_size
     nb_epochs = args.nb_epochs
@@ -75,7 +75,7 @@ def main():
 
     # Data Pipeline
     dl = dataloader.Dataloader(batch_size)
-    train_ds, val_ds = dl.get_datasets_appa_real()
+    train_ds, val_ds = dl.get_datasets_wiki()
     
     os.system("rm -rf ./logs/")
 

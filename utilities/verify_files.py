@@ -3,20 +3,21 @@ import pathlib
 import os
 
 skip_list = []
-sub_dir = "test"
 
-process_dir = f"ChaLearn_aligned/"
+process_dir = f"imdb_wiki/imdb_crop/"
 dir = pathlib.Path(f"../{process_dir}")
 
-df = pd.read_csv(dir / "train_gt.csv")
+df = pd.read_csv(dir / "imdb.csv")
+print(df.shape[0])
 
-file_list = df['image'].tolist()
+file_list = df['full_path'].str.replace(r'[\[\]\']', '').tolist()
 
 for file in file_list:
+    # print(dir / file)
     if not os.path.isfile(dir / file):
+        # print(file)
         skip_list.append(file)
 
-df = df[~df['image'].isin(skip_list)]
-df['mean'] = df['mean'].round(0)
-df = df.drop('stdv', 1)
-df.to_csv(f"train_gt_aligned.csv")
+print(len(skip_list))
+df = df[~df['full_path'].str.replace(r'[\[\]\']', '').isin(skip_list)]
+df.to_csv(dir / f"imdb_processed.csv")
