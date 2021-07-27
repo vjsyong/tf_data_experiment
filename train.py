@@ -76,7 +76,7 @@ def main():
     # Data Pipeline
     dl = dataloader.Dataloader(batch_size)
     # train_ds, val_ds = dl.get_datasets_wiki()
-    train_ds, val_ds = dl.get_datasets_pretraining()
+    train_ds, val_ds, train_steps, val_steps = dl.get_datasets_pretraining()
     
     os.system("rm -rf ./logs/")
 
@@ -102,7 +102,8 @@ def main():
     hist = model.fit(x=train_ds,
                                epochs=nb_epochs,
                                validation_data=val_ds,
-                            #    steps_per_epoch=dataloader.steps_per_epoch_appa_real(batch_size),
+                               steps_per_epoch=train_steps,
+                               validation_steps=val_steps,
                                verbose=1,
                                callbacks=callbacks)
 
