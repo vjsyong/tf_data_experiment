@@ -31,8 +31,13 @@ def load_augment_batch_dataset(batch_size, im_size=224, split_ratio=0.7, dataset
     train_ds = wiki_path_labels.take(train_size).cache()
     test_ds = wiki_path_labels.skip(train_size).cache()
 
+    train_ds = train_ds.interleave(
+        lambda self, _: train_ds.map(load_image_and_labels, num_parallel_calls=tf.data.AUTOTUNE).map(image_augmentations, num_parallel_calls=tf.data.AUTOTUNE).batch(batch_size, drop_remainder=True).prefetch(tf.data.AUTOTUNE),
+        num_parallel_calls=tf.data.AUTOTUNE
+    )
+
     # train_ds = train_ds.map(load_image_and_labels, num_parallel_calls=tf.data.AUTOTUNE).cache().map(image_augmentations, num_parallel_calls=tf.data.AUTOTUNE).batch(batch_size, drop_remainder=True).prefetch(tf.data.AUTOTUNE)
-    train_ds = train_ds.map(load_image_and_labels, num_parallel_calls=tf.data.AUTOTUNE).map(image_augmentations, num_parallel_calls=tf.data.AUTOTUNE).batch(batch_size, drop_remainder=True).prefetch(tf.data.AUTOTUNE)
+    # train_ds = train_ds.map(load_image_and_labels, num_parallel_calls=tf.data.AUTOTUNE).map(image_augmentations, num_parallel_calls=tf.data.AUTOTUNE).batch(batch_size, drop_remainder=True).prefetch(tf.data.AUTOTUNE)
     test_ds = test_ds.map(load_image_and_labels, num_parallel_calls=tf.data.AUTOTUNE).batch(batch_size, drop_remainder=True).prefetch(tf.data.AUTOTUNE).cache()
 
     return train_ds, test_ds
