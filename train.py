@@ -7,7 +7,7 @@ from tensorflow.keras.optimizers import SGD, Adam
 import dataloader
 import os
 
-from model import get_model, age_mae
+from model import get_model, age_mae, unfreeze_model
 
 
 def get_args():
@@ -81,7 +81,8 @@ def main():
     os.system("rm -rf ./logs/")
 
     # Training Pipeline
-    model = get_model(model_name=model_name)
+    model = get_model(model_name=model_name, feature_extractor_trainable=False)
+    unfreeze_model(model, layer_count=100)
     opt = get_optimizer(opt_name, lr)
     model.compile(optimizer=opt, loss="categorical_crossentropy", metrics=[age_mae])
     # model.summary()
@@ -92,7 +93,7 @@ def main():
                 # LearningRateScheduler(schedule=Schedule(nb_epochs, initial_lr=lr)),
                 ReduceLROnPlateau(monitor='val_age_mae', factor=0.2,
                               patience=6, min_lr=0.0001, verbose=1),
-                ModelCheckpoint(str(output_dir) + f"/weights/dense256-{model_name}/{batch_size}-{lr}-{opt_name}/" + "{epoch:03d}-{val_loss:.3f}-{val_age_mae:.3f}.hdf5",
+                ModelCheckpoint(str(output_dir) + f"/weights/dense256-pretrain2-{model_name}/{batch_size}-{lr}-{opt_name}/" + "{epoch:03d}-{val_loss:.3f}-{val_age_mae:.3f}.hdf5",
                                  monitor="val_age_mae",
                                  verbose=1,
                                  save_best_only=True,

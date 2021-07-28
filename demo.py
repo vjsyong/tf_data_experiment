@@ -13,11 +13,13 @@ def get_args():
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("--model_name", type=str, default="EfficientNetB0",
                         help="model name: 'ResNet50' or 'InceptionResNetV2' or 'EfficientNetB3")
-    parser.add_argument("--weight_file", type=str, default="checkpoints/weights/EfficientNetB0/32-0.003-sgd/022-1.985-2.946.hdf5",
+    parser.add_argument("--weight_file", type=str, default="checkpoints/weights/dense256_finetune_unlocked-EfficientNetB0/512-0.001-adam/093-1.368-1.698.hdf5",
                         help="path to weight file (e.g. age_only_weights.029-4.027-5.250.hdf5)")
+    parser.add_argument("--margin", type=float, default=1.1,
+                        help="percentage of extra padding around face cropping box")
     parser.add_argument("--image_dir", type=str, default="../appa-real/test",
                         help="target image directory; if set, images in image_dir are used instead of webcam")
-    parser.add_argument("--image_gt", type=str,
+    parser.add_argument("--image_gt", type=str, default="../appa-real/gt_test.csv",
                         help="ground truth labels for appa-real test; if set, visualization will render gt next to prediction")
     args = parser.parse_args()
     return args
@@ -72,13 +74,13 @@ def main():
     args = get_args()
     model_name = args.model_name
     weight_file = args.weight_file
-    # margin = args.margin
+    margin = args.margin
     image_dir = args.image_dir
     image_gt = args.image_gt
 
     # for face detection
     detector = dlib.get_frontal_face_detector()
-    predictor = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat")
+    predictor = dlib.shape_predictor("utilities/shape_predictor_68_face_landmarks.dat")
 
     # load model and weights
     model = get_model(model_name=model_name)
@@ -114,11 +116,12 @@ def main():
                 left_eye = extract_left_eye_center(shape)
                 right_eye = extract_right_eye_center(shape)
                 x1, y1, x2, y2, = d.left(), d.top(), d.right() + 1, d.bottom() + 1
+                
                 cv2.rectangle(img, (x1, y1), (x2, y2), (255, 0, 0), 2)
                 M = get_rotation_matrix(left_eye, right_eye)
                 rotated = cv2.warpAffine(img, M, (img_w, img_h), flags=cv2.INTER_CUBIC)
                 
-                face = faces[i, :, :, :] = cv2.resize(crop_image(rotated, d), (224, 224))
+                face = faces[i, :, :, :] = cv2.resize(crop_image(rotated, d, margin), (224, 224))
                 
                 # x1, y1, x2, y2, w, h = d.left(), d.top(), d.right() + 1, d.bottom() + 1, d.width(), d.height()
                 # xw1 = max(int(x1 - margin * w), 0)

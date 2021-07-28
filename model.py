@@ -1,6 +1,6 @@
 # import better_exceptions
 from tensorflow.keras.applications import EfficientNetB0, EfficientNetB3
-from tensorflow.keras.layers import Dense, Dropout
+from tensorflow.keras.layers import Dense, Dropout, BatchNormalization
 from tensorflow.keras.models import Model
 from tensorflow.keras import backend as K
 import tensorflow as tf
@@ -14,7 +14,7 @@ def age_mae(y_true, y_pred):
     return mae
 
 
-def get_model(model_name="EfficientNetB0"):
+def get_model(model_name="EfficientNetB0", feature_extractor_trainable=True):
     
     
     with mirrored_strategy.scope():
@@ -24,6 +24,10 @@ def get_model(model_name="EfficientNetB0"):
             base_model = EfficientNetB0(include_top=False, weights='imagenet', input_shape=(224, 224, 3), pooling="avg")
         elif model_name == 'EfficientNetB3':
             base_model = EfficientNetB3(include_top=False, weights='imagenet', input_shape=(300, 300, 3), pooling="avg")
+        
+        if not feature_extractor_trainable:
+            print("freezing feature extractor")
+            base_model.trainable = False
             
         dense1 = Dense(units=256, activation="relu", name="dense_1")(base_model.output)
         dropout1 = Dropout(0.2)(dense1)
@@ -40,6 +44,14 @@ def get_model(model_name="EfficientNetB0"):
         model = Model(inputs=base_model.input, outputs=prediction)
 
         return model
+
+def unfreeze_model(model, layer_count=20):
+    # We unfreeze the top n layers while leaving BatchNorm layers frozen
+    print(type(model))
+    for layer in model.layers[-layer_count:]:
+        if not isinstance(layer, BatchNormalization):
+            layer.trainable = True
+
 
 def main():
     model = get_model("EfficientNetB0")

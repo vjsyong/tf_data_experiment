@@ -28,12 +28,13 @@ def load_augment_batch_dataset(batch_size, im_size=224, split_ratio=0.7):
     UTK_list_ds = tf.data.Dataset.list_files(str(UTKFace_dir/'*'))
 
     # Split training and validation according to split_ratio
+    UTK_list_ds = UTK_list_ds.shuffle(UTKFace_len)
     train_size = int(split_ratio * UTKFace_len)
     train_ds = UTK_list_ds.take(train_size)
     test_ds = UTK_list_ds.skip(train_size)
 
     # Load files, augment, batch, prefetch into dataset
-    train_ds = train_ds.map(load_utkface, num_parallel_calls=tf.data.AUTOTUNE).cache().shuffle(24).map(image_augmentations, num_parallel_calls=tf.data.AUTOTUNE).batch(batch_size, drop_remainder=True).prefetch(tf.data.AUTOTUNE)
+    train_ds = train_ds.map(load_utkface, num_parallel_calls=tf.data.AUTOTUNE).cache().shuffle(128).map(image_augmentations, num_parallel_calls=tf.data.AUTOTUNE).batch(batch_size, drop_remainder=True).prefetch(tf.data.AUTOTUNE)
     test_ds = test_ds.map(load_utkface, num_parallel_calls=tf.data.AUTOTUNE).batch(batch_size, drop_remainder=True).prefetch(tf.data.AUTOTUNE).cache()
     
     return train_ds, test_ds
