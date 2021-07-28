@@ -89,7 +89,7 @@ def main():
     output_dir = Path(__file__).resolve().parent.joinpath(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     callbacks = [
-                TensorBoard(log_dir="./logs", histogram_freq=1),
+                TensorBoard(log_dir="./logs", histogram_freq=1, profile_batch='10, 15'),
                 # LearningRateScheduler(schedule=Schedule(nb_epochs, initial_lr=lr)),
                 ReduceLROnPlateau(monitor='val_age_mae', factor=0.2,
                               patience=6, min_lr=0.0001, verbose=1),

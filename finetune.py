@@ -19,11 +19,11 @@ def get_args():
                         help="path to the pretrained_model")
     parser.add_argument("--layers", type=int, default=0,
                         help="number of unlocked layers to train with")
-    parser.add_argument("--batch_size", type=int, default=64,
+    parser.add_argument("--batch_size", type=int, default=128,
                         help="batch size")
     parser.add_argument("--nb_epochs", type=int, default=30,
                         help="number of epochs")
-    parser.add_argument("--lr", type=float, default=0.01,
+    parser.add_argument("--lr", type=float, default=0.001,
                         help="learning rate")
     parser.add_argument("--opt", type=str, default="adam",
                         help="optimizer name; 'sgd' or 'adam'")
@@ -79,7 +79,7 @@ def main():
     # Data Pipeline
     dl = dataloader.Dataloader(batch_size)
     # train_ds, val_ds = dl.get_datasets_wiki()
-    train_ds, val_ds = dl.get_datasets_appa_real()
+    train_ds, val_ds, train_steps, val_steps = dl.get_datasets_utkface()
     
     os.system("rm -rf ./logs/")
 
@@ -98,7 +98,7 @@ def main():
     output_dir = Path(__file__).resolve().parent.joinpath(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     callbacks = [
-                TensorBoard(log_dir="./logs", histogram_freq=1),
+                TensorBoard(log_dir="./logs", histogram_freq=1, profile_batch='50, 75'),
                 # LearningRateScheduler(schedule=Schedule(nb_epochs, initial_lr=lr)),
                 ReduceLROnPlateau(monitor='val_age_mae', factor=0.2,
                               patience=6, min_lr=0.0001, verbose=1),
@@ -112,7 +112,8 @@ def main():
     hist = model.fit(x=train_ds,
                                epochs=nb_epochs,
                                validation_data=val_ds,
-                            #    steps_per_epoch=dataloader.steps_per_epoch_appa_real(batch_size),
+                               steps_per_epoch=train_steps,
+                               validation_steps=val_steps,
                                verbose=1,
                                callbacks=callbacks)
 

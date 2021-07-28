@@ -19,8 +19,8 @@ class Dataloader():
         return train_ds, val_ds
     
     def get_datasets_utkface(self, split_ratio=0.7):
-        train_ds, val_ds = utk_loader.load_augment_batch_dataset(self.batch_size, split_ratio=split_ratio)
-        return train_ds, val_ds
+        train_ds, val_ds, train_steps, val_steps = utk_loader.load_augment_batch_dataset(self.batch_size, split_ratio=split_ratio)
+        return train_ds, val_ds, train_steps, val_steps
 
     def get_datasets_chalearn(self, split_ratio=0.7):
         train_ds, val_ds = chalearn_loader.load_augment_batch_dataset(self.batch_size, split_ratio=split_ratio)
