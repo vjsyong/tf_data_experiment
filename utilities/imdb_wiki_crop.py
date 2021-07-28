@@ -12,11 +12,12 @@ from tqdm import tqdm
 
 def align_image(path):
     save_dir = '/'.join(str(path).split("/")[0:5])
+    
     save_dir = save_dir.replace("imdb_crop", "imdb_crop_aligned")
     filename = Path(str(path).replace('imdb_crop', 'imdb_crop_aligned'))
-    
+    sd = save_dir
     save_dir = Path(save_dir).mkdir(parents=True, exist_ok=True)
-
+    # print(filename, sd)
     try:
         aligned_face = DeepFace.detectFace(str(path), detector_backend = 'dlib')
     except:
@@ -28,4 +29,6 @@ def align_image(path):
 
 # if __name__ == '__main__':
 working_dir = Path(f"../../imdb_wiki/imdb_crop/")
-Parallel(n_jobs=20)(delayed(align_image)(path) for path in tqdm(working_dir.glob('**/*.jpg')))
+Parallel(n_jobs=40)(delayed(align_image)(path) for path in tqdm(working_dir.glob('**/*.jpg')))
+# for path in tqdm(working_dir.glob('**/*.jpg')):
+#     align_image(path) 

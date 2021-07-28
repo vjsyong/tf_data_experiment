@@ -3,3 +3,4 @@ dataset_mosaic
 logs
 settings.json
 __pycache__/dataloader.cpython-36.pyc
+*.pyc
