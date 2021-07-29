@@ -56,7 +56,7 @@ class Dataloader():
 
 if __name__ == '__main__':
     dl = Dataloader()
-    train_ds, val_ds = dl.get_datasets_chalearn()
+    train_ds, val_ds, train_steps, val_steps = dl.get_datasets_utkface()
     print(train_ds)
     for image, label in train_ds.take(1).unbatch():
         dl.show_sample(image, label)

@@ -15,7 +15,7 @@ def get_args():
                         help="model name: 'ResNet50' or 'InceptionResNetV2' or 'EfficientNetB3")
     parser.add_argument("--weight_file", type=str, default="checkpoints/weights/dense256_finetune_unlocked-EfficientNetB0/512-0.001-adam/093-1.368-1.698.hdf5",
                         help="path to weight file (e.g. age_only_weights.029-4.027-5.250.hdf5)")
-    parser.add_argument("--margin", type=float, default=1.1,
+    parser.add_argument("--margin", type=float, default=0.25,
                         help="percentage of extra padding around face cropping box")
     parser.add_argument("--image_dir", type=str, default="../appa-real/test",
                         help="target image directory; if set, images in image_dir are used instead of webcam")
@@ -80,6 +80,7 @@ def main():
 
     # for face detection
     detector = dlib.get_frontal_face_detector()
+    # detector = dlib.cnn_face_detection_model_v1("utilities/mmod_human_face_detector.dat")
     predictor = dlib.shape_predictor("utilities/shape_predictor_68_face_landmarks.dat")
 
     # load model and weights
@@ -92,7 +93,7 @@ def main():
 
     image_generator = yield_images_from_dir(image_dir, True if image_gt else False) if image_dir else yield_images()
 
-    for img, path in image_generator:
+    for index, (img, path) in enumerate(image_generator):
         input_img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         img_h, img_w, _ = np.shape(input_img)
 
@@ -142,6 +143,7 @@ def main():
             for i, d in enumerate(detected):
                 if path:
                     label = "P:" + str(int(predicted_ages[i])) + ", R:" + str(real_age) + ", A:" + str(round(apparent_age, 2))
+                    # label = str(index)
                 else:
                     label = "P:" + str(int(predicted_ages[i]))
                 draw_label(img, (d.left(), d.top()), label)
@@ -149,7 +151,7 @@ def main():
 
         # cv2.imshow("result", img)
         try:
-            cv2.imshow("result", img)
+            cv2.imshow("results", img)
         except:
             print("imshow failed")
 
@@ -157,6 +159,7 @@ def main():
 
         if key == 27:  # ESC
             break
+
 
 
 if __name__ == "__main__":

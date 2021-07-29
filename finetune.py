@@ -101,8 +101,8 @@ def main():
                 TensorBoard(log_dir="./logs", histogram_freq=1, profile_batch='50, 75'),
                 # LearningRateScheduler(schedule=Schedule(nb_epochs, initial_lr=lr)),
                 ReduceLROnPlateau(monitor='val_age_mae', factor=0.2,
-                              patience=6, min_lr=0.0001, verbose=1),
-                ModelCheckpoint(str(output_dir) + f"/weights/dense256_finetune_{lock_status}-{model_name}/appa-real-{batch_size}-{lr}-{opt_name}/" + "{epoch:03d}-{val_loss:.3f}-{val_age_mae:.3f}.hdf5",
+                              patience=6, min_lr=0.00001, verbose=1),
+                ModelCheckpoint(str(output_dir) + f"/weights/dense256_finetune2_{lock_status}-{model_name}/utkface-{batch_size}-{lr}-{opt_name}/" + "{epoch:03d}-{val_loss:.3f}-{val_age_mae:.3f}.hdf5",
                                  monitor="val_age_mae",
                                  verbose=1,
                                  save_best_only=True,
@@ -112,8 +112,8 @@ def main():
     hist = model.fit(x=train_ds,
                                epochs=nb_epochs,
                                validation_data=val_ds,
-                               steps_per_epoch=train_steps,
-                               validation_steps=val_steps,
+                            #    steps_per_epoch=train_steps,
+                            #    validation_steps=val_steps,
                                verbose=1,
                                callbacks=callbacks)
 
