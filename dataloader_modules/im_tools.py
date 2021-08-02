@@ -28,7 +28,7 @@ def image_augmentations(image, label):
   image = tf.image.random_brightness(image, 0.15)
   
   # Image spacial augments
-  # image = tfa.image.rotate(image, tf.random.normal((), 0, 0.1, tf.float32, seed=0), fill_mode='nearest')
+  image = tfa.image.rotate(image, tf.random.normal((), 0, 0.2, tf.float32, seed=0), fill_mode='nearest')
   # image = tfa.image.shear_x(image, tf.random.normal((), 0, 0.04, tf.float32, seed=0), 0)
   # image = tfa.image.translate(image, tf.random.normal((2,), 0, 8, tf.float32, seed=0),fill_mode='nearest')
 

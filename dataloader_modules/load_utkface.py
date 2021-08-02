@@ -36,7 +36,7 @@ def load_augment_batch_dataset(batch_size, im_size=224, split_ratio=0.7):
     train_size = int(split_ratio * UTKFace_len)
 
     # Debugging augments
-    train_size = 32 # Remove during training
+    # train_size = 32 # Remove during training
 
     train_ds = UTK_list_ds.take(train_size).cache()
     test_ds = UTK_list_ds.skip(train_size).cache()

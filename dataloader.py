@@ -40,6 +40,17 @@ class Dataloader():
         ds_name = "imdb"
         return train_ds, val_ds, train_steps, val_steps, ds_name
 
+    # Appa-real - UTKFace agglomeration
+    def get_datasets_utk_appa(self):
+        train_ds_appa, val_ds_appa, train_steps_appa, val_steps_appa, _ = self.get_datasets_appa_real()
+        train_ds_utk, _, train_steps_utk, _, _ = self.get_datasets_utkface(split_ratio=1)
+        train_ds = train_ds_utk.concatenate(train_ds_appa)
+        val_ds = val_ds_appa
+        train_steps = train_steps_appa + train_steps_utk
+        val_steps = val_steps_appa
+        ds_name = "utk_appa"
+        return train_ds, val_ds, train_steps, val_steps, ds_name
+
     # Create IMDB-WIKI pretraining dataset
     def get_datasets_pretraining(self):
         # Use all files in both datasets to create a pretraining dataset
@@ -78,9 +89,9 @@ class Dataloader():
 if __name__ == '__main__':
     dl = Dataloader()
     train_ds, val_ds, train_steps, val_steps, ds_name = dl.get_datasets_appa_real()
-    for i in range(1):
-      dl.construct_mosaic(train_ds.take(2).unbatch(), i)
-    print(train_ds)
-    # for batch_num, batch in enumerate(train_ds.take(2)):
-    #     dl.construct_mosaic(batch, batch_num)
-    #     # dl.show_sample(image, label)
+    # for i in range(1):
+    #   dl.construct_mosaic(train_ds.take(2).unbatch(), i)
+    # print(train_ds)
+    for batch_num, (image, label) in enumerate(train_ds.take(1).unbatch()):
+        # dl.construct_mosaic(batch, batch_num)
+        dl.show_sample(image, label)

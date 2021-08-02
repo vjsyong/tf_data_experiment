@@ -29,7 +29,7 @@ def load_augment_batch_dataset(batch_size, im_size=224):
     #     num_parallel_calls=tf.data.AUTOTUNE
     # )
 
-    train_ds = AR_path_labels_train.map(load_image_and_labels, num_parallel_calls=tf.data.AUTOTUNE).shuffle(100, reshuffle_each_iteration=True).map(image_augmentations, num_parallel_calls=tf.data.AUTOTUNE).batch(batch_size, drop_remainder=True).prefetch(tf.data.AUTOTUNE).map(image_cutout, num_parallel_calls=tf.data.AUTOTUNE).repeat()
+    train_ds = AR_path_labels_train.map(load_image_and_labels, num_parallel_calls=tf.data.AUTOTUNE).shuffle(AR_len_train, reshuffle_each_iteration=True).map(image_augmentations, num_parallel_calls=tf.data.AUTOTUNE).batch(batch_size, drop_remainder=True).prefetch(tf.data.AUTOTUNE).map(image_cutout, num_parallel_calls=tf.data.AUTOTUNE).repeat()
     test_ds = AR_path_labels_val.map(load_image_and_labels, num_parallel_calls=tf.data.AUTOTUNE).batch(batch_size, drop_remainder=True).prefetch(tf.data.AUTOTUNE).cache()
     return train_ds, test_ds, AR_len_train//batch_size, AR_len_val//batch_size
 

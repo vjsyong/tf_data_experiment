@@ -29,27 +29,30 @@ def get_model(model_name="EfficientNetB0", feature_extractor_trainable=True):
             print("freezing feature extractor")
             base_model.trainable = False
             
-        # dense1 = Dense(units=256, activation="relu", name="dense_1")(base_model.output)
-        # dropout1 = Dropout(0.2)(dense1)
+        dense1 = Dense(units=256, activation="relu", name="dense_1")(base_model.output)
+        dropout1 = Dropout(0.2)(dense1)
 
-        # dense2 = Dense(units=256, activation="relu", name="dense_2")(dropout1)
-        # dropout2 = Dropout(0.2)(dense2)
+        dense2 = Dense(units=256, activation="relu", name="dense_2")(dropout1)
+        dropout2 = Dropout(0.2)(dense2)
 
-        # prediction = Dense(units=101, activation="softmax",
-        #                 name="pred_age")(dropout2)
+        prediction = Dense(units=101, activation="softmax",
+                        name="pred_age")(dropout2)
 
-        prediction = Dense(units=101, kernel_initializer="he_normal", use_bias=False, activation="softmax",
-                        name="pred_age")(base_model.output)
+        # prediction = Dense(units=101, kernel_initializer="he_normal", use_bias=False, activation="softmax",
+        #                 name="pred_age")(base_model.output)
 
         model = Model(inputs=base_model.input, outputs=prediction)
 
         return model
 
-def unfreeze_model(model, layer_count=20):
+def unfreeze_model(model, layer_count=20, freeze_batchnorm=True):
     # We unfreeze the top n layers while leaving BatchNorm layers frozen
     print(type(model))
     for layer in model.layers[-layer_count:]:
-        if not isinstance(layer, BatchNormalization):
+    # for i, layer in enumerate(model.layers):
+        
+        if not isinstance(layer, BatchNormalization) or freeze_batchnorm == False:
+            print(layer.name)
             layer.trainable = True
 
 
