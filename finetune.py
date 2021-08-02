@@ -79,7 +79,7 @@ def main():
     # Data Pipeline
     dl = dataloader.Dataloader(batch_size)
     # train_ds, val_ds = dl.get_datasets_wiki()
-    train_ds, val_ds, train_steps, val_steps = dl.get_datasets_utkface()
+    train_ds, val_ds, train_steps, val_steps, ds_name = dl.get_datasets_appa_real()
     
     os.system("rm -rf ./logs/")
 
@@ -102,7 +102,7 @@ def main():
                 # LearningRateScheduler(schedule=Schedule(nb_epochs, initial_lr=lr)),
                 ReduceLROnPlateau(monitor='val_age_mae', factor=0.2,
                               patience=6, min_lr=0.00001, verbose=1),
-                ModelCheckpoint(str(output_dir) + f"/weights/dense256_finetune2_{lock_status}-{model_name}/utkface-{batch_size}-{lr}-{opt_name}/" + "{epoch:03d}-{val_loss:.3f}-{val_age_mae:.3f}.hdf5",
+                ModelCheckpoint(str(output_dir) + f"/weights/{model_name}-dense256/unlocked-{batch_size}-{lr}-{opt_name}/" + f"{ds_name}" + "{epoch:03d}-{val_loss:.3f}-{val_age_mae:.3f}.hdf5",
                                  monitor="val_age_mae",
                                  verbose=1,
                                  save_best_only=True,

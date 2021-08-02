@@ -15,7 +15,7 @@ def get_args():
                         help="model name: 'ResNet50' or 'InceptionResNetV2' or 'EfficientNetB3")
     parser.add_argument("--weight_file", type=str, default="checkpoints/weights/dense256_finetune_unlocked-EfficientNetB0/512-0.001-adam/093-1.368-1.698.hdf5",
                         help="path to weight file (e.g. age_only_weights.029-4.027-5.250.hdf5)")
-    parser.add_argument("--margin", type=float, default=0.25,
+    parser.add_argument("--margin", type=float, default=0.6,
                         help="percentage of extra padding around face cropping box")
     parser.add_argument("--image_dir", type=str, default="../appa-real/test",
                         help="target image directory; if set, images in image_dir are used instead of webcam")
@@ -103,8 +103,6 @@ def main():
             gt_slice = gt[boolean_series]
             apparent_age = gt_slice.apparent_age.mean()
             real_age = gt_slice.real_age.mean()
-            print(gt_slice["apparent_age"], gt_slice["real_age"])
-            print(apparent_age, real_age)
         
         # detect faces using dlib detector
         detected = detector(input_img, 1)
@@ -122,7 +120,11 @@ def main():
                 M = get_rotation_matrix(left_eye, right_eye)
                 rotated = cv2.warpAffine(img, M, (img_w, img_h), flags=cv2.INTER_CUBIC)
                 
-                face = faces[i, :, :, :] = cv2.resize(crop_image(rotated, d, margin), (224, 224))
+                try:
+                    face = faces[i, :, :, :] = cv2.resize(crop_image(rotated, d, margin), (224, 224))
+                except:
+                    print("out of bounds")
+                    continue
                 
                 # x1, y1, x2, y2, w, h = d.left(), d.top(), d.right() + 1, d.bottom() + 1, d.width(), d.height()
                 # xw1 = max(int(x1 - margin * w), 0)
@@ -143,6 +145,7 @@ def main():
             for i, d in enumerate(detected):
                 if path:
                     label = "P:" + str(int(predicted_ages[i])) + ", R:" + str(real_age) + ", A:" + str(round(apparent_age, 2))
+                    print(label)
                     # label = str(index)
                 else:
                     label = "P:" + str(int(predicted_ages[i]))
@@ -151,7 +154,7 @@ def main():
 
         # cv2.imshow("result", img)
         try:
-            cv2.imshow("results", img)
+            cv2.imshow("results", face)
         except:
             print("imshow failed")
 

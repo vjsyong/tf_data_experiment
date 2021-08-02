@@ -34,6 +34,10 @@ def load_augment_batch_dataset(batch_size, im_size=224, split_ratio=0.7):
     # Split training and validation according to split_ratio
     UTK_list_ds = UTK_list_ds.shuffle(UTKFace_len).with_options(options)
     train_size = int(split_ratio * UTKFace_len)
+
+    # Debugging augments
+    train_size = 32 # Remove during training
+
     train_ds = UTK_list_ds.take(train_size).cache()
     test_ds = UTK_list_ds.skip(train_size).cache()
 
@@ -50,7 +54,7 @@ def load_augment_batch_dataset(batch_size, im_size=224, split_ratio=0.7):
     #     num_parallel_calls=tf.data.AUTOTUNE
     # )
 
-    train_ds = train_ds.map(load_utkface, num_parallel_calls=tf.data.AUTOTUNE).cache().map(image_augmentations, num_parallel_calls=tf.data.AUTOTUNE).batch(batch_size, drop_remainder=True).map(image_cutout, num_parallel_calls=tf.data.AUTOTUNE).prefetch(tf.data.AUTOTUNE)
+    train_ds = train_ds.map(load_utkface, num_parallel_calls=tf.data.AUTOTUNE).cache().map(image_augmentations, num_parallel_calls=tf.data.AUTOTUNE).batch(batch_size, drop_remainder=True).map(image_cutout, num_parallel_calls=tf.data.AUTOTUNE).prefetch(tf.data.AUTOTUNE).repeat()
     test_ds = test_ds.map(load_utkface, num_parallel_calls=tf.data.AUTOTUNE).batch(batch_size, drop_remainder=True).prefetch(tf.data.AUTOTUNE).cache()
     
     return train_ds, test_ds, train_steps_per_epoch, test_steps_per_epoch

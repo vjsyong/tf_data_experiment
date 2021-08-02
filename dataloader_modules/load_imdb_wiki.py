@@ -11,7 +11,7 @@ def load_augment_batch_dataset(batch_size, im_size=224, split_ratio=0.7, dataset
     global image_size
     image_size = im_size
 
-    ds_dir = pathlib.Path(f"../imdb_wiki/{dataset}_crop")
+    ds_dir = pathlib.Path(f"../training_data/imdb_wiki/{dataset}_crop")
     df = pd.read_csv(ds_dir / f'{dataset}.csv')
 
     paths = df['full_path'] = df['full_path'].str.replace(r'[\[\]\']', '').apply(lambda x: f"{ds_dir}/{x}") # Strip [, ], and ' characters
@@ -47,8 +47,6 @@ def load_augment_batch_dataset(batch_size, im_size=224, split_ratio=0.7, dataset
         lambda self, _: test_ds.map(load_image_and_labels, num_parallel_calls=tf.data.AUTOTUNE).batch(batch_size, drop_remainder=True).prefetch(tf.data.AUTOTUNE),
         num_parallel_calls=tf.data.AUTOTUNE
     )
-
-
 
     # train_ds = train_ds.map(load_image_and_labels, num_parallel_calls=tf.data.AUTOTUNE).cache().map(image_augmentations, num_parallel_calls=tf.data.AUTOTUNE).batch(batch_size, drop_remainder=True).prefetch(tf.data.AUTOTUNE)
     # train_ds = train_ds.map(load_image_and_labels, num_parallel_calls=tf.data.AUTOTUNE).cache().map(image_augmentations, num_parallel_calls=tf.data.AUTOTUNE).batch(batch_size, drop_remainder=True).prefetch(tf.data.AUTOTUNE)
