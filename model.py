@@ -29,11 +29,11 @@ def get_model(model_name="EfficientNetB0", feature_extractor_trainable=True):
             print("freezing feature extractor")
             base_model.trainable = False
             
-        dense1 = Dense(units=256, activation="relu", name="dense_1")(base_model.output)
-        dropout1 = Dropout(0.2)(dense1)
+        dense1 = Dense(units=128, activation="relu", name="dense_1", kernel_regularizer='l2', kernel_initializer="he_normal")(base_model.output)
+        dropout1 = Dropout(0.3)(dense1)
 
-        dense2 = Dense(units=256, activation="relu", name="dense_2")(dropout1)
-        dropout2 = Dropout(0.2)(dense2)
+        dense2 = Dense(units=128, activation="relu", name="dense_2", kernel_regularizer='l2', kernel_initializer="he_normal")(dropout1)
+        dropout2 = Dropout(0.3)(dense2)
 
         prediction = Dense(units=101, activation="softmax",
                         name="pred_age")(dropout2)

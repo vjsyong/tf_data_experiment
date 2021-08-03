@@ -15,9 +15,12 @@ def load_image_and_labels(image_path, label):
   return image, label
 
 def image_cutout(batch, labels):
-  cutout_batch = tfa.image.random_cutout(batch, (48, 48), constant_values = 0)  
-  translate_batch = tfa.image.translate(cutout_batch, tf.random.normal((2,), 0, 8, tf.float32, seed=0),fill_mode='nearest')
-  return translate_batch, labels
+  cutout_batch = tfa.image.random_cutout(batch, (40, 40), constant_values = 0)
+  cutout_batch = tfa.image.random_cutout(cutout_batch, (40, 40), constant_values = 255)
+  cutout_batch = tfa.image.random_cutout(cutout_batch, (40, 40), constant_values = 100)
+  cutout_batch = tfa.image.random_cutout(cutout_batch, (40, 40), constant_values = 200)   
+  # translate_batch = tfa.image.translate(cutout_batch, tf.random.normal((2,), 0, 8, tf.float32, seed=0),fill_mode='nearest')
+  return cutout_batch, labels
 
 def image_augmentations(image, label):
   # Image property augments
@@ -28,7 +31,7 @@ def image_augmentations(image, label):
   image = tf.image.random_brightness(image, 0.15)
   
   # Image spacial augments
-  image = tfa.image.rotate(image, tf.random.normal((), 0, 0.2, tf.float32, seed=0), fill_mode='nearest')
+  # image = tfa.image.rotate(image, tf.random.normal((), 0, 0.2, tf.float32, seed=0), fill_mode='nearest')
   # image = tfa.image.shear_x(image, tf.random.normal((), 0, 0.04, tf.float32, seed=0), 0)
   # image = tfa.image.translate(image, tf.random.normal((2,), 0, 8, tf.float32, seed=0),fill_mode='nearest')
 
