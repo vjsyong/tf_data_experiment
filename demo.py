@@ -144,7 +144,10 @@ def main():
             # draw results
             for i, d in enumerate(detected):
                 if path:
-                    label = "P:" + str(int(predicted_ages[i])) + ", R:" + str(real_age) + ", A:" + str(round(apparent_age, 2))
+                    try:
+                        label = "P:" + str(int(predicted_ages[i])) + ", R:" + str(real_age) + ", A:" + str(round(apparent_age, 2))
+                    except:
+                        label = "P: NaN" + ", R:" + str(real_age) + ", A:" + str(round(apparent_age, 2))
                     print(label)
                     # label = str(index)
                 else:

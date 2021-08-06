@@ -26,8 +26,8 @@ def image_augmentations(image, label):
   # Image property augments
   image = tf.image.random_contrast(image, 0.8, 1.2)
   image = tf.image.random_flip_left_right(image)
-  image = tf.image.random_saturation(image, 0.8, 1.2)
-  image = tf.image.random_hue(image, 0.02)
+  image = tf.image.random_saturation(image, 0.3, 1.3)
+  image = tf.image.random_hue(image, 0.1)
   image = tf.image.random_brightness(image, 0.15)
   
   # Image spacial augments

@@ -8,6 +8,7 @@ import dataloader
 import os
 
 from model import get_model, age_mae, unfreeze_model
+import classweights
 
 
 def get_args():
@@ -82,10 +83,11 @@ def main():
     os.system("rm -rf ./logs/")
 
     # Training Pipeline
-    model = get_model(model_name=model_name, feature_extractor_trainable=True)
-    # unfreeze_model(model, layer_count=120, freeze_batchnorm = False)
+    model = get_model(model_name=model_name, feature_extractor_trainable=False)
+    unfreeze_model(model, layer_count=120, freeze_batchnorm = True)
     opt = get_optimizer(opt_name, lr)
-    model.compile(optimizer=opt, loss="categorical_crossentropy", metrics=[age_mae])
+    model.load_weights("checkpoints/weights/base.hdf5")
+    model.compile(optimizer=opt, loss="categorical_crossentropy",metrics=[age_mae])
     # model.summary()
     output_dir = Path(__file__).resolve().parent.joinpath(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -96,18 +98,18 @@ def main():
                 # LearningRateScheduler(schedule=Schedule(nb_epochs, initial_lr=lr)),
                 ReduceLROnPlateau(monitor='val_age_mae', factor=0.2,
                               patience=6, min_lr=0.0001, verbose=1),
-                ModelCheckpoint(str(output_dir) + f"/weights/{model_name}-dense128/{batch_size}-{lr}-{opt_name}/" + f"{ds_name}" + "{epoch:03d}-{val_loss:.3f}-{val_age_mae:.3f}.hdf5",
+                ModelCheckpoint(str(output_dir) + f"/weights/{model_name}-dense256/transfer_{batch_size}-{lr}-{opt_name}/" + f"{ds_name}" + "{epoch:03d}-{val_loss:.3f}-{val_age_mae:.3f}.hdf5",
                                  monitor="val_age_mae",
                                  verbose=1,
                                  save_best_only=True,
                                  mode="min")
                  ]
-
     hist = model.fit(x=train_ds,
                                epochs=nb_epochs,
                                validation_data=val_ds,
                                steps_per_epoch=train_steps,
                                validation_steps=val_steps,
+                               class_weight=classweights.classweights,
                                verbose=1,
                                callbacks=callbacks)
 

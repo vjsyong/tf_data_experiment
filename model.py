@@ -3,9 +3,13 @@ from tensorflow.keras.applications import EfficientNetB0, EfficientNetB3
 from tensorflow.keras.layers import Dense, Dropout, BatchNormalization
 from tensorflow.keras.models import Model
 from tensorflow.keras import backend as K
+from tensorflow.keras import mixed_precision
+
 import tensorflow as tf
 
 mirrored_strategy = tf.distribute.MirroredStrategy()
+# mixed_precision.set_global_policy('mixed_float16')
+
 
 def age_mae(y_true, y_pred):
     true_age = K.sum(y_true * K.arange(0, 101, dtype="float32"), axis=-1)
@@ -29,11 +33,11 @@ def get_model(model_name="EfficientNetB0", feature_extractor_trainable=True):
             print("freezing feature extractor")
             base_model.trainable = False
             
-        dense1 = Dense(units=128, activation="relu", name="dense_1", kernel_regularizer='l2', kernel_initializer="he_normal")(base_model.output)
-        dropout1 = Dropout(0.3)(dense1)
+        dense1 = Dense(units=256, activation="relu", name="dense_1", kernel_regularizer='l2', kernel_initializer="he_normal")(base_model.output)
+        dropout1 = Dropout(0.2)(dense1)
 
-        dense2 = Dense(units=128, activation="relu", name="dense_2", kernel_regularizer='l2', kernel_initializer="he_normal")(dropout1)
-        dropout2 = Dropout(0.3)(dense2)
+        dense2 = Dense(units=256, activation="relu", name="dense_2", kernel_regularizer='l2', kernel_initializer="he_normal")(dropout1)
+        dropout2 = Dropout(0.2)(dense2)
 
         prediction = Dense(units=101, activation="softmax",
                         name="pred_age")(dropout2)

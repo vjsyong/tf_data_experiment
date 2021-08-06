@@ -4,10 +4,10 @@ import os
 
 skip_list = []
 
-process_dir = f"imdb_wiki/imdb_crop/"
+process_dir = f"training_data/imdb_wiki/wiki_crop/"
 dir = pathlib.Path(f"../{process_dir}")
 
-df = pd.read_csv(dir / "imdb.csv")
+df = pd.read_csv(dir / "wiki.csv")
 print(df.shape[0])
 
 file_list = df['full_path'].str.replace(r'[\[\]\']', '').tolist()
@@ -20,4 +20,4 @@ for file in file_list:
 
 print(len(skip_list))
 df = df[~df['full_path'].str.replace(r'[\[\]\']', '').isin(skip_list)]
-df.to_csv(dir / f"imdb_processed.csv")
+df.to_csv(dir / f"wiki_processed.csv")

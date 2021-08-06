@@ -19,6 +19,10 @@ class Dataloader():
         train_ds, val_ds, train_steps, val_steps = appa_real_loader.load_augment_batch_dataset(self.batch_size)
         ds_name = "appa_real"
         return train_ds, val_ds, train_steps, val_steps, ds_name
+
+    def get_datasets_appa_real_test(self):
+        test_ds = appa_real_loader.load_test_dataset(self.batch_size)
+        return test_ds
     
     def get_datasets_utkface(self, split_ratio=0.7):
         train_ds, val_ds, train_steps, val_steps = utk_loader.load_augment_batch_dataset(self.batch_size, split_ratio=split_ratio)
